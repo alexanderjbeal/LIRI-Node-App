@@ -9,7 +9,6 @@ let keys = require('./keys.js');
 // let spotify = new Spotify(keys.spotify);
 let client = new Twitter(keys.twitter);
 
-// Take two arguments.
 // The first will be the asking LIRI ('my-tweets', 'spotify-this-song', 'movie-this', 'do-what-it-says')
 // The second will be additional information 
 let ask_liri = process.argv[2];
@@ -38,7 +37,7 @@ case "do-what-it-says":
 function myTweets() {
     let params = {
         screen_name: 'alexanderjbeal',
-        count: 2
+        count: 5
     };
     client.get('statuses/user_timeline', params, function(error, tweets, response) {
         if (!error) {
