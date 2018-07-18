@@ -52,10 +52,8 @@ function showTweets() {
     });
 }
 
-function showSpotify(){
-
+function showSpotify() {
     if (input === '') input = 'Victory Notorious B.I.G.';
-
     spotify.search({
         type: 'track',
         query: input
@@ -72,18 +70,14 @@ function showSpotify(){
   .catch(function(error) {
     console.log(error);
   });
-
 }
 
 function showMovie() {
-
     if (input === '') input = 'Mr. Nobody';
-
     let options = {
         uri: `http://www.omdbapi.com/?apikey=trilogy&t=${input}`,
         json: true,
     };
-
     rp(options)
         .then(function (response) {
             console.log(`
@@ -98,20 +92,15 @@ function showMovie() {
             \nActors: ${response.Actors}
             `);
     })
-
     .catch(function (error) {
         console.log(error);
     });
 }
 
 function showWhat() {
-
     fs.readFile("random.txt", "utf8", (error, data) => {
-
         if (error) throw error;
-      
         let read_song = data.split(',').slice(1);
-
         spotify.search({
             type: 'track',
             query: read_song
