@@ -2,39 +2,40 @@ require('dotenv').config();
 
 let fs = require('fs');
 let request = require('request');
+let rp = require('request-promise');
 let Twitter = require('twitter');
-// let Spotify = require('spotify');
+let Spotify = require('node-spotify-api');
 let keys = require('./keys.js');
 
-// let spotify = new Spotify(keys.spotify);
+let spotify = new Spotify(keys.spotify);
 let client = new Twitter(keys.twitter);
 
 // The first will be the asking LIRI ('my-tweets', 'spotify-this-song', 'movie-this', 'do-what-it-says')
 // The second will be additional information 
 let ask_liri = process.argv[2];
-let data_liri = process.argv[3];
+let input = process.argv[3];
 
 // We will then create a switch-case statement (if-else would also work).
 // The switch-case will direct which function gets run.
 switch (ask_liri) {
 case "my-tweets":
-  myTweets();
+  showTweets();
   break;
 
 case "spotify-this-song":
-  spotifyThis();
+  showSpotify();
   break;
 
 case "movie-this":
-  movieThis();
+  showMovie();
   break;
 
 case "do-what-it-says":
-  doWhat();
+  showWhat();
   break;
 }
 
-function myTweets() {
+function showTweets() {
     let params = {
         screen_name: 'alexanderjbeal',
         count: 5
@@ -42,55 +43,91 @@ function myTweets() {
     client.get('statuses/user_timeline', params, function(error, tweets, response) {
         if (!error) {
             for (let i = 0; i < tweets.length; i++) {
-                console.log(`----------------`);
-                console.log(`Tweet: ${tweets[i].text}`);
+                console.log(`
+                \n----------------
+                \n${tweets[i].created_at}
+                \n${tweets[i].text}`);
             }
         }
     });
 }
 
-function spotifyThis() {
+function showSpotify(){
+
+    if (input === '') input = 'Victory Notorious B.I.G.';
+
+    spotify.search({
+        type: 'track',
+        query: input
+    })
+  .then(function(response) {
+    let info = response.tracks.items[0];
+        console.log(`
+        \n---- Spotify ----
+        \nArtist: ${info.artists[0].name}
+        \nTrack: ${info.name}
+        \nAlbum: ${info.album.name}
+        `);
+  })
+  .catch(function(error) {
+    console.log(error);
+  });
 
 }
 
-function movieThis() {
-// Request to the OMDB API with the movie specified
-let queryUrl = `http://www.omdbapi.com/?t=${data_liri}&apikey=trilogy`;
-request(queryUrl, function(error, response, body) {
+function showMovie() {
 
-    // If process.argv[3] (movie title) is undefined, run code for Mr. Nobody
-    if (`${JSON.parse(body).Title}` === 'undefined') {
-        let nobodyUrl = `http://www.omdbapi.com/?t=Mr.+Nobody&apikey=trilogy`;
-        request(nobodyUrl, function(error, response, body) {
-            console.log(`---- MOVIE ----`);
-            console.log(`Title: ${JSON.parse(body).Title}`);
-            console.log(`IMDb: ${JSON.parse(body).Ratings[0].Value}`);
-            console.log(`Rotten Tomatoes: ${JSON.parse(body).Ratings[1].Value}`);
-            console.log(`Year: ${JSON.parse(body).Year}`);
-            console.log(`Country: ${JSON.parse(body).Country}`);
-            console.log(`Language: ${JSON.parse(body).Language}`);
-            console.log(`Plot: ${JSON.parse(body).Plot}`);
-            console.log(`Actors: ${JSON.parse(body).Actors}`);
-            console.log(`----------------`);
-        });
-    }
+    if (input === '') input = 'Mr. Nobody';
 
-    // If process.argv[3] (movie title) is sucessful or not undefined, run this code
-    else if (!error && response.statusCode === 200) {
-      console.log(`---- MOVIE ----`);
-      console.log(`Title: ${JSON.parse(body).Title}`);
-      console.log(`IMDb: ${JSON.parse(body).Ratings[0].Value}`);
-      console.log(`Rotten Tomatoes: ${JSON.parse(body).Ratings[1].Value}`);
-      console.log(`Year: ${JSON.parse(body).Year}`);
-      console.log(`Country: ${JSON.parse(body).Country}`);
-      console.log(`Language: ${JSON.parse(body).Language}`);
-      console.log(`Plot: ${JSON.parse(body).Plot}`);
-      console.log(`Actors: ${JSON.parse(body).Actors}`);
-      console.log(`----------------`);
-     } else console.log(error);
+    let options = {
+        uri: `http://www.omdbapi.com/?apikey=trilogy&t=${input}`,
+        json: true,
+    };
+
+    rp(options)
+        .then(function (response) {
+            console.log(`
+            \n---- OMDb ----
+            \nTitle: ${response.Title}
+            \nIMDb: ${response.Ratings[0].Value}
+            \nRotten Tomatoes: ${response.Ratings[1].Value}
+            \nYear: ${response.Year}
+            \nCountry: ${response.Country}
+            \nLanguage: ${response.Language}
+            \nPlot: ${response.Plot}
+            \nActors: ${response.Actors}
+            `);
+    })
+
+    .catch(function (error) {
+        console.log(error);
     });
 }
 
-function doWhat() {
+function showWhat() {
 
+    fs.readFile("random.txt", "utf8", (error, data) => {
+
+        if (error) throw error;
+      
+        let read_song = data.split(',').slice(1);
+
+        spotify.search({
+            type: 'track',
+            query: read_song
+        })
+        .then(function(response) {
+            let info = response.tracks.items[0];
+                console.log(`
+                \n---- Spotify ----
+                \nArtist: ${info.artists[0].name}
+                \nTrack: ${info.name}
+                \nAlbum: ${info.album.name}
+                `);
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+        
+      });
 }
