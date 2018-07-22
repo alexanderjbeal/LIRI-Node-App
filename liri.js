@@ -35,6 +35,7 @@ case "do-what-it-says":
   break;
 }
 
+// my-tweets
 function showTweets() {
     let params = {
         screen_name: 'alexanderjbeal',
@@ -52,6 +53,7 @@ function showTweets() {
     });
 }
 
+//spotify-this-song
 function showSpotify() {
     if (input === '') input = 'Victory Notorious B.I.G.';
     spotify.search({
@@ -72,6 +74,7 @@ function showSpotify() {
   });
 }
 
+// movie-this (OMDb)
 function showMovie() {
     if (input === '') input = 'Mr. Nobody';
     let options = {
@@ -97,6 +100,7 @@ function showMovie() {
     });
 }
 
+// do-what-it-says
 function showWhat() {
     fs.readFile("random.txt", "utf8", (error, data) => {
         if (error) throw error;
